@@ -8,7 +8,7 @@
         />
         <ul>
             <li>已选</li>
-            <li v-for="(key, value) in selectGoods" :key="key">{{key}}：{{value}}</li>
+            <li v-for="(value, key) in selectGoods" :key="key">{{key}}：{{value}}</li>
         </ul>
     </div>
 </template>
@@ -25,42 +25,56 @@ export default {
                     id: 1,
                     price: 99,
                     store: 9,
-                    尺码:
-                        "L,https://img10.360buyimg.com/n1/s30x30_jfs/t1/102755/29/17884/214230/5e8d5900E5cbe2970/438d2a49b477cd91.png",
-                    颜色: "红色",
-                    内存: "8g"
+                    颜色: "粉色,https://inews.gtimg.com/newsapp_ls/0/12169344339_295195/0",
+                    尺码: "小",
+                    内存: "4g",
                 },
                 {
                     id: 2,
-                    price: 33,
-                    store: 99,
-                    尺码:
-                        "M,https://img10.360buyimg.com/n1/s30x30_jfs/t1/87864/17/18053/155430/5e8d58ffEc4b14fd6/dce191b5d9a44154.jpg",
-                    颜色: "蓝色",
-                    内存: "4g"
+                    price: 99,
+                    store: 9,
+                    颜色: "粉色",
+                    尺码: "小",
+                    内存: "8g",
                 },
                 {
                     id: 3,
+                    price: 33,
+                    store: 99,
+                    颜色: "粉色",
+                    尺码: "大",
+                    内存: "4g",
+                },
+                {
+                    id: 4,
+                    price: 99,
+                    store: 9,
+                    颜色: "黄色",
+                    尺码: "小",
+                    内存: "4g",
+                },
+                {
+                    id: 5,
                     price: 14,
                     store: 99,
-                    尺码:
-                        "L,https://img10.360buyimg.com/n1/s30x30_jfs/t1/102755/29/17884/214230/5e8d5900E5cbe2970/438d2a49b477cd91.png",
                     颜色: "蓝色",
-                    内存: "5g"
-                }
-            ]
+                    尺码: "大",
+                    内存: "8g",
+                },
+            ],
         };
     },
     methods: {
         // 获取选中的商品
         handleSelectGoods(goods) {
             this.selectGoods = goods ? goods : null;
+            // console.log(goods)
         },
         // 获取点击有图片的商品
         hanldeActiveImg(goods) {
-            console.log(goods);
-        }
-    }
+            // console.log(goods);
+        },
+    },
 };
 </script>
 

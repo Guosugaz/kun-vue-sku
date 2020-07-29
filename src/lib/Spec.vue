@@ -24,51 +24,71 @@ export default {
         // sku数组
         specArr: {
             type: Array,
-            required: true
+            required: true,
         },
-        // 非规格值，如：id price store
+        // 非规格值，如: price store
         defaultKey: {
-            type: Array
+            type: Array,
         },
         // 库存的字段
         storeKey: {
             type: String,
-            default: "store"
-        }
+            default: "store",
+        },
     },
     name: "GoodsSpec",
     data() {
         return {
+            selectKeys: [], // 选中的规格的keys 格式为：["", "", ""]
+            skuPartNameStock: {}, // 不完整了sku的库存
+            skuStock: {}, // 完整的sku的库存和id
             copySeArr: [], // 复制this.specArr
             select: {}, // 选中的规格
-            showInfo: {}, // 规格值属性
-            canSelectArr: [] // 可选择的商品数组
+            showInfo: {}, // 展示的规格值
         };
     },
     watch: {
         specArr() {
             this.init();
-        }
+        },
     },
     created() {
         this.init();
     },
     computed: {
+        // showInfo的keys
+        showInfoKeys() {
+            return Object.keys(this.showInfo);
+        },
+        // 是否有规格展示
         hasShowInfo() {
-            return !!Object.keys(this.showInfo).length;
-        }
+            return !!this.showInfoKeys.length;
+        },
     },
     methods: {
         init() {
+            this.skuPartNameStock = {};
+            this.skuStock = {};
             this.copySeArr = this.specArr;
             this.showInfo = this.getInfo();
+            this.getRemainByKey();
+            this.getSelectKeys();
             this.handleNoShowInfo();
+        },
+        // 获取 selectKeys
+        getSelectKeys() {
+            let arr = [];
+            this.showInfoKeys.forEach((key, index) => {
+                arr[index] = this.select[key] ? this.select[key] : "";
+            });
+            this.selectKeys = arr;
         },
         // 获取要展示的数据结构
         getInfo() {
             const spec = {};
-            this.copySeArr.forEach(item => {
-                if (!item[this.storeKey]) return; // 没有库存的直接跳过
+
+            this.copySeArr.forEach((item) => {
+                const valueArr = [];
                 for (let key in item) {
                     if (this.isThatKey(key)) {
                         let objV = spec[key];
@@ -76,24 +96,26 @@ export default {
                         let itemVal = {};
                         if (item[key].indexOf(",") > -1) {
                             // 有图片的情况
-                            let [val, img] = item[key].split(",");
+                            let [val, ...img] = item[key].split(",");
+                            img = img.join(","); // 防止有多个 , 的情况
                             itemVal = {
                                 disable: false,
                                 active: false,
                                 value: val,
-                                img
+                                img,
                             };
                             value = val;
                         } else {
                             itemVal = {
                                 disable: false,
                                 active: false,
-                                value: item[key]
+                                value: item[key],
                             };
                             value = item[key];
                         }
+                        valueArr.push(value);
                         if (objV) {
-                            if (objV.every(arrI => arrI.value !== value)) {
+                            if (objV.every((arrI) => arrI.value !== value)) {
                                 spec[key].push(itemVal);
                             }
                         } else {
@@ -101,6 +123,10 @@ export default {
                         }
                     }
                 }
+                // 插入完成的sku 库存和id
+                this.skuStock[valueArr.join("-")] = `${item[this.storeKey]},${
+                    item.id
+                }`;
             });
             return spec;
         },
@@ -120,7 +146,12 @@ export default {
                 this.select[key] = value;
                 // 设置激活的图片
                 if (img) {
-                    this.$emit("active-img", this.copySeArr.find(item => item[key].split(",")[0] === value));
+                    this.$emit(
+                        "active-img",
+                        this.copySeArr.find(
+                            (item) => item[key].split(",")[0] === value
+                        )
+                    );
                 }
             }
             // 处理取消状态
@@ -132,74 +163,92 @@ export default {
                 this.$emit("get-goods", null);
             }
 
-            // 当没有选择时重置全部选项的可选性
-            if (!Object.keys(this.select).length) {
-                this.showInfo = this.getInfo();
-                return;
-            }
-            // 处理可否能选择
-            this.handleDisable();
+            this.getSelectKeys();
 
-            // 当都选择完时，直接拿出对应的商品
-            if (
-                Object.keys(this.showInfo).length ===
-                Object.keys(this.select).length
-            ) {
-                // 获取商品
-                this.$emit("get-goods", this.canSelectArr[0]);
+            this.fetchStatus();
+
+            // 全部都选择好时获取商品
+            if (Object.keys(this.select).length === this.showInfoKeys.length) {
+                let _id = this.skuStock[this.selectKeys.join("-")].split(
+                    ","
+                )[1];
+                let goods = this.copySeArr.find(({ id }) => _id == id);
+                this.$emit("get-goods", goods);
             }
         },
-        // 处理规格是否可选择
-        handleDisable() {
-            let canSelectArr = []; // // 能够选择的商品集合
-            let canSelect = {}; // 能够选择的组合对象
-            for (let seKey in this.select) {
-                let tmp = [];
-                let obj = {};
-                let arr = canSelectArr.length ? canSelectArr : this.copySeArr;
-                tmp = arr.filter(
-                    goodsItem =>
-                        goodsItem[seKey] &&
-                        goodsItem[this.storeKey] &&
-                        goodsItem[seKey].replace(/,\S+/g, "") ===
-                            this.select[seKey]
-                );
-                // 将缓冲的可选商品集合里转为对象格式，和showInfo格式相同，做对比
-                tmp.forEach(item => {
-                    for (let itemKey in item) {
-                        if (this.isThatKey(itemKey)) {
-                            let itemVal = item[itemKey].replace(/,\S+/g, "");
-                            if (!obj[itemKey]) {
-                                obj[itemKey] = [itemVal];
-                            } else {
-                                if (obj[itemKey].indexOf(itemVal) < 0) {
-                                    obj[itemKey].push(itemVal);
-                                }
-                            }
-                        }
-                    }
-                });
-                canSelectArr = tmp;
-                canSelect = obj;
-            }
-            this.canSelectArr = canSelectArr;
+        // 更新状态
+        fetchStatus() {
+            // 根据已选择的sku来筛选库存
+            this.showInfoKeys.forEach((key, skuIdx) => {
+                let sku = this.showInfo[key];
+                const curSelected = this.selectKeys.slice();
 
-            // 将获取的可选商品对象来设置是否可选
-            for (let showKey in this.showInfo) {
-                if (!canSelect[showKey]) {
-                    this.showInfo[showKey].forEach((showItem, ind) => {
-                        this.showInfo[showKey][ind].disable = true;
-                    });
+                // 已选的不用更新
+                sku.forEach((skuInfo) => {
+                    // 已选择规格的跳过
+                    if (skuInfo.active) return;
+
+                    // 将不同sku代入计算库存
+                    const cacheKey = curSelected[skuIdx];
+                    // 组合没选中的值和已选中的值
+                    curSelected[skuIdx] = skuInfo.value;
+                    // 获取不同组合的库存
+                    const stock = this.getRemainByKey(
+                        curSelected.filter((item) => item)
+                    );
+                    curSelected[skuIdx] = cacheKey;
+
+                    // 更新sku状态
+                    skuInfo.disable = stock <= 0;
+                });
+            });
+        },
+        /**
+         * sku算法 获取已选择sku的库存数
+         * @param {Array} selected 已选择的sku数组 ["粉丝", "L"]
+         */
+        getRemainByKey(selected = []) {
+            const { skuStock, skuPartNameStock, showInfo, showInfoKeys } = this;
+            const selectedJoin = selected.join("-");
+
+            // 如果已有缓存则返回
+            if (typeof skuPartNameStock[selectedJoin] !== "undefined") {
+                return skuPartNameStock[selectedJoin];
+            }
+
+            // 所有sku已选择 及时缓存
+            if (selected.length === showInfoKeys.length) {
+                skuPartNameStock[selectedJoin] = skuStock[selectedJoin]
+                    ? skuStock[selectedJoin].split(",")[0]
+                    : 0;
+                return skuPartNameStock[selectedJoin];
+            }
+
+            let remainStock = 0;
+            const willSelected = [];
+
+            for (let i = 0; i < showInfoKeys.length; i += 1) {
+                let thatArr = this.showInfo[showInfoKeys[i]];
+                // 对应规格的sku是否已选择
+                const exist = thatArr.find(
+                    ({ value }) => value === selected[0]
+                );
+                if (exist && selected.length > 0) {
+                    willSelected.push(selected.shift());
                 } else {
-                    this.showInfo[showKey].forEach((showItem, ind) => {
-                        if (canSelect[showKey].indexOf(showItem.value) > -1) {
-                            this.showInfo[showKey][ind].disable = false;
-                        } else {
-                            this.showInfo[showKey][ind].disable = true;
-                        }
-                    });
+                    // 对应sku未选择，则遍历该规格所有sku
+
+                    for (let j = 0; j < thatArr.length; j += 1) {
+                        remainStock += this.getRemainByKey(
+                            willSelected.concat(thatArr[j].value, selected)
+                        );
+                    }
+                    break;
                 }
             }
+            // 返回前缓存
+            skuPartNameStock[selectedJoin] = remainStock;
+            return skuPartNameStock[selectedJoin];
         },
         // 处理没有可展示规格的情况
         handleNoShowInfo() {
@@ -219,9 +268,9 @@ export default {
         },
         // 确实是否为规格值
         isThatKey(key) {
-            return this.defaultKey.every(item => item !== key);
-        }
-    }
+            return this.defaultKey.every((item) => item !== key);
+        },
+    },
 };
 </script>
 
@@ -246,7 +295,6 @@ export default {
     float: left;
     margin: 0 10px 10px 0;
     padding: 4px 6px;
-    background: #f7f7f7;
     cursor: pointer;
     border: 1px solid #eee;
     user-select: none;
@@ -254,11 +302,12 @@ export default {
 .spec-item:hover,
 .spec-item.active {
     padding: 3px 5px;
+    color: #ff8080;
     border: 2px solid #ff8080;
 }
-.spec-item.active {
+/* .spec-item.active {
     position: relative;
-}
+} */
 /* .spec-item.active::after {
     content: "";
     position: absolute;
@@ -270,8 +319,7 @@ export default {
 } */
 .spec-item.disable {
     padding: 3px 5px;
-    background: #fff;
-    color: #999;
+    color: #dedede;
     cursor: not-allowed;
     border: 2px dotted #eee;
 }
