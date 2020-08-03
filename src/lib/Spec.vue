@@ -210,16 +210,14 @@ export default {
         getRemainByKey(selected = []) {
             const { skuStock, skuPartNameStock, showInfo, showInfoKeys } = this;
             const selectedJoin = selected.join("-");
-
             // 如果已有缓存则返回
             if (typeof skuPartNameStock[selectedJoin] !== "undefined") {
                 return skuPartNameStock[selectedJoin];
             }
-
             // 所有sku已选择 及时缓存
             if (selected.length === showInfoKeys.length) {
                 skuPartNameStock[selectedJoin] = skuStock[selectedJoin]
-                    ? skuStock[selectedJoin].split(",")[0]
+                    ? Number(skuStock[selectedJoin].split(",")[0])
                     : 0;
                 return skuPartNameStock[selectedJoin];
             }
@@ -237,7 +235,6 @@ export default {
                     willSelected.push(selected.shift());
                 } else {
                     // 对应sku未选择，则遍历该规格所有sku
-
                     for (let j = 0; j < thatArr.length; j += 1) {
                         remainStock += this.getRemainByKey(
                             willSelected.concat(thatArr[j].value, selected)

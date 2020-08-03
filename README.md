@@ -40,7 +40,7 @@ export default {
     name: "App",
     data() {
         return {
-            defaultKey: ["id", "price", "store"],
+            defaultKey: ["price"],
             specArr: [
                 {
                     id: 1,
@@ -86,9 +86,9 @@ export default {
 
 | Param | Type | Describe | default | Version |
 | :------: | :------: | :------: | :------: | :-----: |
-| specArr | Arrary | 商品数组 | | |
-| defaultKey | String[] | 非sku的字段，如id, price | | |
-| storeKey | string | 库存的字段 | store |
+| specArr | Object[] | 商品数组,每个item必须有id | | |
+| defaultKey | String[] | 非sku的字段，如price | | |
+| storeKey | String | 库存的字段 | store |
 
 ### callback
 

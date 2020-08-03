@@ -1,6 +1,6 @@
 {
   "name": "kun-vue-sku",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "vue sku",
   "main": "dist/vue-sku.js",
   "scripts": {

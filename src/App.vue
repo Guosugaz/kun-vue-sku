@@ -1,6 +1,7 @@
 <template>
     <div class="app">
         <vue-spec
+            storeKey="store"
             :specArr="specArr"
             :defaultKey="defaultKey"
             @get-goods="handleSelectGoods"
@@ -25,7 +26,8 @@ export default {
                     id: 1,
                     price: 99,
                     store: 9,
-                    颜色: "粉色,https://inews.gtimg.com/newsapp_ls/0/12169344339_295195/0",
+                    颜色:
+                        "粉色,https://inews.gtimg.com/newsapp_ls/0/12169344339_295195/0",
                     尺码: "小",
                     内存: "4g",
                 },
