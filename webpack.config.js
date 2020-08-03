@@ -2,20 +2,35 @@ const path = require("path");
 const VueLoaderPlugin = require('vue-loader/lib/plugin'); // vue-loder插件
 const { CleanWebpackPlugin } = require('clean-webpack-plugin'); // 每次打包清除dist插件
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const HtmlWebpackPlugin = require('html-webpack-plugin'); // html自动生成插件
 
-let isPro = process.env.NODE_ENV.replace(/^\s+|\s+$/, "") === "production";
+const ENV = process.env.NODE_ENV.replace(/^\s+|\s+$/, "");
 
-module.exports = {
-    devtool: isPro ? "#source-map" : "#eval-source-map",
-    entry: isPro ? "./src/lib/index.js" : "./src/main.js",
-    output: {
-        path: path.resolve(__dirname, "./dist"),
-        publicPath: "/dist/",
+const isPro = ENV === "production";
+const isEXp = ENV === "examples";
+let output = {
+    path: path.resolve(__dirname, "./dist")
+};
+
+if (isPro) {
+    output = {
         filename: "vue-sku.js",
         library: "VueSku",
         libraryTarget: 'umd',
         umdNamedDefine: true
-    },
+    }
+} else if (isEXp) {
+    output = {
+        path: path.resolve(__dirname, "./examples"),
+        publicPath: "/kun-vue-sku/"
+    }
+}
+
+
+module.exports = {
+    devtool: isPro || isEXp ? "#source-map" : "#eval-source-map",
+    entry: isPro ? "./src/lib/index.js" : "./src/main.js",
+    output,
     module: {
         rules: [
             {
@@ -51,6 +66,7 @@ module.exports = {
             }
         ]
     },
+    // externals,
     resolve: {
         extensions: ['.js', '.vue'],
         alias: {
@@ -71,4 +87,9 @@ module.exports = {
 
 if (isPro) {
     module.exports.plugins.push(new BundleAnalyzerPlugin())
+} else if (isEXp) {
+    module.exports.plugins.push(new HtmlWebpackPlugin({
+        filename: "index.exp.html",
+        template: path.resolve(__dirname, "./index.html")
+    }));
 }

@@ -1,6 +1,9 @@
 # Kun-Vue-Sku
  > 用Vue实现了sku选择
 
+## 预览
+<img src="https://img-blog.csdnimg.cn/20200803125327763.gif">
+
  ## Demo
  ``` bash
 # install dependencies
