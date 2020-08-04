@@ -20,6 +20,7 @@
 
 <script>
 export default {
+    name: "VueSku",
     props: {
         // sku数组
         specArr: {
@@ -36,7 +37,6 @@ export default {
             default: "store",
         },
     },
-    name: "GoodsSpec",
     data() {
         return {
             selectKeys: [], // 选中的规格的keys 格式为：["", "", ""]

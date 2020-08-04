@@ -28,6 +28,7 @@ if (isPro) {
 
 
 module.exports = {
+    mode: isPro || isEXp ? "production" : "development",
     devtool: isPro || isEXp ? "#source-map" : "#eval-source-map",
     entry: isPro ? "./src/lib/index.js" : "./src/main.js",
     output,
@@ -86,10 +87,10 @@ module.exports = {
 }
 
 if (isPro) {
-    module.exports.plugins.push(new BundleAnalyzerPlugin())
-} else if (isEXp) {
+    // module.exports.plugins.push(new BundleAnalyzerPlugin());
+} else {
     module.exports.plugins.push(new HtmlWebpackPlugin({
-        filename: "index.exp.html",
+        filename: "index.html",
         template: path.resolve(__dirname, "./index.html")
     }));
 }

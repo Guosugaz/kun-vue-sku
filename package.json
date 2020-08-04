@@ -1,8 +1,11 @@
 {
   "name": "kun-vue-sku",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "vue sku",
   "main": "dist/vue-sku.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "set NODE_ENV=development && webpack-dev-server --open --hot",
     "build:exp": "rimraf examples && set NODE_ENV=examples && webpack --progress --hide-modules",

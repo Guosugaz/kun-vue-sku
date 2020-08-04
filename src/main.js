@@ -1,8 +1,8 @@
 import Vue from "vue";
 import App from "./App";
-import VueSpec from "./lib";
+import VueSku from "./lib";
 
-Vue.use(VueSpec);
+Vue.use(VueSku);
 
 new Vue({
     render: h => h(App)

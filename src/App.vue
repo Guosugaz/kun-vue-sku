@@ -1,6 +1,6 @@
 <template>
     <div class="app">
-        <vue-spec
+        <vue-sku
             storeKey="store"
             :specArr="specArr"
             :defaultKey="defaultKey"
